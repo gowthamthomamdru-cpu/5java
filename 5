@@ -1,0 +1,90 @@
+CREATE DATABASE studentdb;
+USE studentdb;
+CREATE TABLE student (
+    rollno INT PRIMARY KEY,
+    name VARCHAR(50),
+    address VARCHAR(50)
+);
+
+INSERT INTO student VALUES
+(1, 'Ali', 'Hyderabad'),
+(2, 'John', 'Delhi'),
+(3, 'Sara', 'Mumbai');
+
+
+import java.sql.*;
+public class UpdatableResultSetDemo
+{
+    public static void main(String args[])
+    {
+        try
+        {
+            // Load Driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // Create Connection
+            Connection con = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/studentdb",
+                "root",
+                "root"
+            );
+
+            // Create Statement with Updatable ResultSet
+            Statement stmt = con.createStatement(
+                ResultSet.TYPE_SCROLL_SENSITIVE,
+                ResultSet.CONCUR_UPDATABLE
+            );
+
+            // Execute Query
+            ResultSet rs = stmt.executeQuery("SELECT * FROM student");
+
+            System.out.println("Original Records:");
+            while(rs.next())
+            {
+                System.out.println(
+                    rs.getInt("rollno") + " "
+                    + rs.getString("name") + " "
+                    + rs.getString("address")
+                );
+            }
+
+            // Move to first row and update
+            rs.first();
+            rs.updateString("name", "Ahmed");
+            rs.updateString("address", "Chennai");
+            rs.updateRow();
+            System.out.println("\nFirst Record Updated Successfully");
+            // Insert New Record
+            rs.moveToInsertRow();
+            rs.updateInt("rollno", 4);
+            rs.updateString("name", "Ravi");
+            rs.updateString("address", "Bangalore");
+            rs.insertRow();
+            System.out.println("New Record Inserted Successfully");
+            // Delete third record
+            rs.absolute(3);
+            rs.deleteRow();
+            System.out.println("Third Record Deleted Successfully");
+            // Display Updated Records
+            rs = stmt.executeQuery("SELECT * FROM student");
+            System.out.println("\nUpdated Records:");
+            while(rs.next())
+            {
+                System.out.println(
+                    rs.getInt("rollno") + " "
+                    + rs.getString("name") + " "
+                    + rs.getString("address")
+                );
+            }
+
+            // Close Connection
+            rs.close();
+            stmt.close();
+            con.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println(e);
+        }
+    }
+}
